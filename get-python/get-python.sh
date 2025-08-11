@@ -3,10 +3,6 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-REPO_URL="https://www.python.org/ftp/python"
-DEFAULT_INSTALL_PATH="/tmp/getpython"
-DEPENDENCY_PKGS=(curl tar wget openssl-devel bzip2-devel zlib-devel libffi-devel make gcc)
-
 HELP_TEXT="
 Usage: bash getpython.sh [--version VERSION]
 
@@ -26,6 +22,16 @@ while [[ "$#" -gt 0 ]]; do
     *) echo "Unknown option: $1" ;;
   esac
 done
+
+REPO_URL="https://www.python.org/ftp/python"
+INSTALL_DIR="/tmp/getpython"
+
+VERSION="${VERSION:-}"
+PYTHON_TARBALL_NAME="Python-${VERSION}.tgz"
+PYTHON_TARBALL_PATH="${INSTALL_DIR}/${PYTHON_TARBALL_NAME}"
+PYTHON_TARBALL_URL="${REPO_URL}/${VERSION}/${PYTHON_TARBALL_NAME}"
+
+DEPENDENCY_PKGS=(curl tar wget openssl-devel bzip2-devel zlib-devel libffi-devel make gcc)
 
 function log() {
   if [[ -n "${LOG:-}" ]]; then
@@ -68,49 +74,42 @@ function need_pkgs() {
 
 # If dir doesn't exist create it
 function check_install_path() {
-  if [[ ! -e ${DEFAULT_INSTALL_PATH} ]]; then
-    log "INFO: Install path doesn't exist, creating it on ${DEFAULT_INSTALL_PATH}."
-    mkdir -p "${DEFAULT_INSTALL_PATH}"
+  if [[ ! -e ${INSTALL_DIR} ]]; then
+    log "INFO: Install path doesn't exist, creating it on ${INSTALL_DIR}."
+    mkdir -p "${INSTALL_DIR}"
   else
-    log "${DEFAULT_INSTALL_PATH} already exist, skip creating."
+    log "${INSTALL_DIR} already exist, skip creating."
   fi
 }
 
 # Download from official repository
 function download_tarball() {
   log "INFO: Downloading the Python ${VERSION} tarball."
-  curl -o ${DEFAULT_INSTALL_PATH}/Python-"${VERSION}".tgz ${REPO_URL}/"${VERSION}"/Python-"${VERSION}".tgz || wget -O ${DEFAULT_INSTALL_PATH}/Python-"${VERSION}".tgz ${REPO_URL}/"${VERSION}"/Python-"${VERSION}".tgz
+  curl -o "$PYTHON_TARBALL_PATH" "$PYTHON_TARBALL_URL" || \
+  wget -O "$PYTHON_TARBALL_PATH" "$PYTHON_TARBALL_URL" || \
+  fatal "Failed to download Python ${VERSION}."
 }
 
 # skip if tarball exist, else download tarball
-function check_tarball() {
-  local tarball="${DEFAULT_INSTALL_PATH}/Python-${VERSION}.tgz"
-
-  if [[ -f "$tarball" ]]; then
+function fetch_and_extract_tarball() {
+  if [[ -f "$PYTHON_TARBALL_PATH" ]]; then
     log "INFO: Python ${VERSION} tarball already exists. Skipping download."
   else
     download_tarball
   fi
-}
 
-# Extract if file exist
-function extract_tarball() {
-  if [[ -e ${DEFAULT_INSTALL_PATH}/Python-"${VERSION}".tgz ]]; then
-    log "INFO: Extracting the Python ${VERSION} tarball."
-    tar -xf ${DEFAULT_INSTALL_PATH}/Python-"${VERSION}".tgz --overwrite -C ${DEFAULT_INSTALL_PATH}
-  else
-    fatal "File doesn't exist, exiting the script"
-  fi
+  log "INFO: Extracting the Python ${VERSION} tarball."
+  tar -xf "$PYTHON_TARBALL_PATH" --overwrite -C ${INSTALL_DIR} || \
+  fatal "File doesn't exist, exiting the script"
 }
 
 # Install requested python
 function install_python() {
   log "INFO: Compiling and install Python ${VERSION}."
-  ${DEFAULT_INSTALL_PATH}/Python-"${VERSION}"/configure --enable-optimizations
-  make altinstall
+  ${INSTALL_DIR}/Python-"${VERSION}"/configure --enable-optimizations
+  make altinstall && log "Python ${VERSION} successfully installed."
 }
 
-# Main function
 function main() {
   log "INFO: Starting the script ..."
   detect_os_version
@@ -120,9 +119,8 @@ function main() {
   need_pkgs "${DEPENDENCY_PKGS[@]}"
 
   check_install_path
-  check_tarball
-  extract_tarball
-  install_python && log "Python ${VERSION} successfully installed." || fatal "Error installing Python ${VERSION}."
+  fetch_and_extract_tarball
+  install_python || fatal "Failed to install Python ${VERSION}."
 }
 
 # Validate the user input
