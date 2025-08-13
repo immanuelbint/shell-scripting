@@ -1,6 +1,6 @@
 # get-python
 
-A simple Bash script to download, compile, and install a specific version of Python from source on Linux systems (e.g. Rocky, CentOS, AlmaLinux, RHEL).
+A simple Bash script to download, compile, and install a specific version of Python from source on Linux systems (e.g. Rocky, CentOS, AlmaLinux, RHEL, Ubuntu, Debian).
 
 > Ideal for developers or sysadmins who need to manage multiple Python versions without affecting the system default.
 
@@ -9,14 +9,14 @@ A simple Bash script to download, compile, and install a specific version of Pyt
 ## Features
 
 - Download official Python tarballs from [python.org](https://www.python.org/ftp/python)
-- Automatically install system dependencies (on supported RPM-based systems)
+- Automatically install system dependencies (on supported RPM & DEB based systems)
 - Compile with `--enable-optimizations` for better performance
 - Logs progress with clean, readable output
 - Error handling with helpful messages
 
 ---
 
-## 🚀 Usage
+## Usage
 
 ```bash
 bash getpython.sh --version <python_version>
@@ -85,8 +85,6 @@ These are required to properly compile and run Python from source.
 
 * Add `--prefix` option for custom install locations
 * Add `--force` flag to re-download or overwrite
-* Add support for Debian/Ubuntu (`apt`)
-* Add checksum verification for downloads
 
 ---
 
