@@ -25,13 +25,18 @@ done
 
 REPO_URL="https://www.python.org/ftp/python"
 INSTALL_DIR="/tmp/getpython"
-
 VERSION="${VERSION:-}"
 PYTHON_TARBALL_NAME="Python-${VERSION}.tgz"
 PYTHON_TARBALL_PATH="${INSTALL_DIR}/${PYTHON_TARBALL_NAME}"
 PYTHON_TARBALL_URL="${REPO_URL}/${VERSION}/${PYTHON_TARBALL_NAME}"
 
 DEPENDENCY_PKGS=(curl tar wget openssl-devel bzip2-devel zlib-devel libffi-devel make gcc)
+declare -A REQPKGS
+REQPKGS["openssl-devel"]="libssl-dev"
+REQPKGS["zlib-devel"]="zlib1g-dev"
+REQPKGS["bzip2-devel"]="libbz2-dev"
+REQPKGS["libffi-devel"]="libffi-dev"
+
 
 function log() {
   if [[ -n "${LOG:-}" ]]; then
@@ -54,21 +59,33 @@ esac
 
 # Supported packaged manager
 function check_pkg_manager() {
+  if [[ $OS_VER =~ (rhel|centos|rocky|almalinux) ]]; then
     PKG_MGR=$(command -v dnf || command -v yum)
     [[ -x $PKG_MGR ]] || fatal "command dnf/yum not found"
+  else
+    PKG_MGR=$(command -v apt || command -v apt-get)
+    [[ -x $PKG_MGR ]] || fatal "command apt/apt-get not found"
+  fi
 }
 
 # Install packages needed
 function need_pkgs() {
     local missing=()
-    for pkgs in "$@"; do 
-        rpm -q "$pkgs" &>/dev/null || missing+=("$pkgs")
-    done
+    if [[ $PKG_MGR =~ (yum|dnf) ]]; then
+      for pkgs in "$@"; do 
+          rpm -q "$pkgs" &>/dev/null || missing+=("$pkgs")
+      done
+    elif [[ $PKG_MGR =~ (apt|apt-get) ]]; then
+      for pkgs in "$@"; do
+        mapped_pkg="${REQPKGS[$pkgs]:-$pkgs}"
+        dpkg -s "$mapped_pkg" &>/dev/null || missing+=("$mapped_pkg")
+      done
+    fi
 
     if ((${#missing[@]})); then
-        "$PKG_MGR" -y install "${missing[@]}"
+        "$PKG_MGR" -y install "${missing[@]}" &>/dev/null
     else
-        log "All requested packages already present."
+        log "INFO: All requested packages already present."
     fi
 }
 
@@ -78,7 +95,7 @@ function check_install_path() {
     log "INFO: Install path doesn't exist, creating it on ${INSTALL_DIR}."
     mkdir -p "${INSTALL_DIR}"
   else
-    log "${INSTALL_DIR} already exist, skip creating."
+    log "INFO: Dir ${INSTALL_DIR} already exist, skip creating."
   fi
 }
 
