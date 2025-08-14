@@ -19,13 +19,13 @@ A simple Bash script to download, compile, and install a specific version of Pyt
 ## Usage
 
 ```bash
-bash getpython.sh --version <python_version>
+bash get-python.sh --version <python_version>
 ````
 
 ### Example:
 
 ```bash
-bash getpython.sh --version 3.11.0
+bash get-python.sh --version 3.11.0
 ```
 
 ---
@@ -33,7 +33,7 @@ bash getpython.sh --version 3.11.0
 ## Requirements
 
 * Rocky Linux, AlmaLinux, RHEL, CentOS
-* `dnf` or `yum` as package manager
+* `dnf`, `yum` or `apt` as package manager
 * Root/sudo access (to install dependencies)
 
 ---
@@ -90,7 +90,7 @@ These are required to properly compile and run Python from source.
 
 ## Author
 
-Made by immanuelbint for fun, learning, and Linux scripting practice.
+Made by immanuelbint for learning, and Linux scripting practice.
 
 ---
 
