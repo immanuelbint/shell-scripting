@@ -7,6 +7,7 @@ A collection of shell scripts for automating various Linux system tasks. Each fo
 - `get-python/` — Install any Python version from source
 - `auto-kinit/` — Automating kerberos kinit process
 - `docker-limit/` — Simple tools to limit docker container resources
+- `pipeline-scanner/` - A lightweight script to detect hardcoded credentials 
 
 Each script is built to be portable, readable, and (mostly) POSIX compliant. Perfect for system admins, learners, or CLI fans.
 
