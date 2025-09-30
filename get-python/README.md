@@ -85,6 +85,7 @@ These are required to properly compile and run Python from source.
 
 * Add `--prefix` option for custom install locations
 * Add `--force` flag to re-download or overwrite
+* Add progress bar instead of showing compile stdout when installing python
 
 ---
 
