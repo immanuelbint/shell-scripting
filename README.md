@@ -15,3 +15,9 @@ Each script is built to be portable, readable, and (mostly) POSIX compliant. Per
 
 I wanted to sharpen my Bash skills, automate boring stuff, and document the process. Sharing here in case it's useful to others too.
 
+## Notes and Future Improvements
+
+- Refactor script to meet current best practices.
+- Adding more advanced script.
+- Adding Python script.
+
